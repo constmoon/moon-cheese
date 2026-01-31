@@ -2,16 +2,21 @@ import { Box, Flex, styled } from 'styled-system/jsx';
 import { ProgressBar, Spacing, Text } from '@/ui-lib';
 import { useQuery } from '@tanstack/react-query';
 import { meQueries } from '@/queries/me';
+import { gradeQueries } from '@/queries/grade';
 import { GRADE_NAMES, GRADE_NAMES_LABEL } from '@/constants/grade';
 import { getGradeProgress, getPointsToNextGrade } from '@/utils/grade';
 import ErrorSection from '@/components/ErrorSection';
 
 function CurrentLevelSection() {
-  const { data: meData = { point: 0, grade: GRADE_NAMES.EXPLORER }, isError } = useQuery(meQueries.me());
+  const { data: meData = { point: 0, grade: GRADE_NAMES.EXPLORER }, isError: isMeError } = useQuery(meQueries.me());
+  const { data: gradePointData, isError: isGradeError } = useQuery(gradeQueries.point());
+
+  const isError = isMeError || isGradeError;
 
   const { point, grade } = meData;
-  const progress = getGradeProgress(point, grade);
-  const pointsToNext = getPointsToNextGrade(point, grade);
+  const gradePointList = gradePointData?.gradePointList ?? [];
+  const progress = getGradeProgress(point, grade, gradePointList);
+  const pointsToNext = getPointsToNextGrade(point, grade, gradePointList);
 
   return (
     <styled.section css={{ px: 5, py: 4 }}>

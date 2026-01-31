@@ -1,30 +1,45 @@
-import { GRADE_NAMES, GRADE_POINTS, type GradeType } from '@/constants/grade';
+import { type GradePointItem } from '@/api/grade';
+import { type GradeType } from '@/constants/grade';
 
-const GRADE_ORDER: GradeType[] = [GRADE_NAMES.EXPLORER, GRADE_NAMES.PILOT, GRADE_NAMES.COMMANDER];
-
-function getNextGrade(currentGrade: GradeType): GradeType | null {
-  const currentIndex = GRADE_ORDER.indexOf(currentGrade);
-  return currentIndex < GRADE_ORDER.length - 1 ? GRADE_ORDER[currentIndex + 1] : null;
+function getMinPoint(grade: GradeType, gradePointList: GradePointItem[]): number {
+  return gradePointList.find(item => item.type === grade)?.minPoint ?? 0;
 }
 
-export function getGradeProgress(point: number, currentGrade: GradeType): number {
-  const nextGrade = getNextGrade(currentGrade);
+function getNextGrade(currentGrade: GradeType, gradePointList: GradePointItem[]): GradeType | null {
+  const sorted = [...gradePointList].sort((a, b) => a.minPoint - b.minPoint);
+  const currentIndex = sorted.findIndex(item => item.type === currentGrade);
+  const hasNextGrade = currentIndex < sorted.length - 1;
+
+  return hasNextGrade ? sorted[currentIndex + 1].type : null;
+}
+
+export function getGradeProgress(point: number, currentGrade: GradeType, gradePointList: GradePointItem[]): number {
+  if (gradePointList.length === 0) {
+    return 0;
+  }
+
+  const nextGrade = getNextGrade(currentGrade, gradePointList);
   if (!nextGrade) {
     return 1;
   }
 
-  const currentMin = GRADE_POINTS[currentGrade];
-  const nextMin = GRADE_POINTS[nextGrade];
+  const currentMin = getMinPoint(currentGrade, gradePointList);
+  const nextMin = getMinPoint(nextGrade, gradePointList);
   const progress = (point - currentMin) / (nextMin - currentMin);
 
   return Math.min(Math.max(progress, 0), 1);
 }
 
-export function getPointsToNextGrade(point: number, currentGrade: GradeType): number | null {
-  const nextGrade = getNextGrade(currentGrade);
+export function getPointsToNextGrade(
+  point: number,
+  currentGrade: GradeType,
+  gradePointList: GradePointItem[]
+): number | null {
+  const nextGrade = getNextGrade(currentGrade, gradePointList);
   if (!nextGrade) {
     return null;
   }
 
-  return Math.max(GRADE_POINTS[nextGrade] - point, 0);
+  const nextMin = getMinPoint(nextGrade, gradePointList);
+  return Math.max(nextMin - point, 0);
 }
