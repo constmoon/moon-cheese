@@ -1,7 +1,17 @@
 import { Box, Flex, styled } from 'styled-system/jsx';
 import { ProgressBar, Spacing, Text } from '@/ui-lib';
+import { useQuery } from '@tanstack/react-query';
+import { meQueries } from '@/queries/me';
+import { GRADE_NAMES } from '@/constants/grade';
+import ErrorSection from '@/components/ErrorSection';
 
 function CurrentLevelSection() {
+  const { data: meData } = useQuery(meQueries.me());
+
+  if (!meData) {
+    return <ErrorSection />;
+  }
+
   return (
     <styled.section css={{ px: 5, py: 4 }}>
       <Text variant="H1_Bold">현재 등급</Text>
@@ -10,7 +20,7 @@ function CurrentLevelSection() {
 
       <Box bg="background.01_white" css={{ px: 5, py: 4, rounded: '2xl' }}>
         <Flex flexDir="column" gap={2}>
-          <Text variant="H2_Bold">Explorer</Text>
+          <Text variant="H2_Bold">{GRADE_NAMES[meData.grade]}</Text>
 
           <ProgressBar value={0.6} size="xs" />
 
