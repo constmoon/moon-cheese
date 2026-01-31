@@ -1,7 +1,9 @@
 import { Switch as ArkSwitch, switchAnatomy } from '@ark-ui/react';
 import { css, cx, type RecipeVariantProps, sva } from 'styled-system/css';
-import { Currency } from '@/constants/currency';
+import { Currency, DEFAULT_EXCHANGE_RATE } from '@/constants/currency';
 import { useCurrencyStore } from '@/stores/useCurrencyStore';
+import { useQuery } from '@tanstack/react-query';
+import { currencyQueries } from '@/queries/currency';
 
 export type CurrencyToggleVariantProps = RecipeVariantProps<typeof currencyToggleRecipe>;
 
@@ -82,12 +84,13 @@ export type CurrencyToggleProps = CurrencyToggleVariantProps & {
 };
 
 const CurrencyToggle = ({ disabled = false }: CurrencyToggleProps) => {
-  const { currency, setCurrency, fetchExchangeRate } = useCurrencyStore();
+  const { currency, setCurrency, setExchangeRate } = useCurrencyStore();
+  const { data: exchangeRate } = useQuery(currencyQueries.exchangeRate());
   const isCheckedKRW = currency === Currency.KRW;
 
   const handleChange = (details: { checked: boolean }) => {
     setCurrency(details.checked ? Currency.KRW : Currency.USD);
-    fetchExchangeRate();
+    setExchangeRate(exchangeRate ?? DEFAULT_EXCHANGE_RATE);
   };
 
   const classes = currencyToggleRecipe();
