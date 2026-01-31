@@ -1,13 +1,6 @@
-import { Currency, type CurrencyType } from '@/constants/currency';
 import { queryOptions } from '@tanstack/react-query';
 import { getExchangeRate } from '@/api/currency';
-
-type ExchangeRate = Record<CurrencyType, number>;
-
-const DEFAULT_EXCHANGE_RATE: ExchangeRate = {
-  [Currency.USD]: 1,
-  [Currency.KRW]: 1300,
-};
+import { DEFAULT_EXCHANGE_RATE } from '@/constants/currency';
 
 export const currencyQueries = {
   exchangeRate: () =>

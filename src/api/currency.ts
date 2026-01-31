@@ -1,7 +1,7 @@
 import { type CurrencyType } from '@/constants/currency';
 import { http } from '@/utils/http';
 
-type ExchangeRate = Record<CurrencyType, number>;
+export type ExchangeRate = Record<CurrencyType, number>;
 
 interface ExchangeRateResponse {
   exchangeRate: ExchangeRate;
