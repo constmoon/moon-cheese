@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { Box, Flex, styled } from 'styled-system/jsx';
 import { ProgressBar, Spacing, Text } from '@/ui-lib';
-import { SuspenseQuery } from '@suspensive/react-query-5';
+import { SuspenseQueries } from '@suspensive/react-query-5';
 import { meQueries } from '@/queries/me';
 import { gradeQueries } from '@/queries/grade';
 import { GRADE_NAMES_LABEL } from '@/constants/grade';
@@ -20,41 +20,37 @@ function CurrentLevelSection() {
         <Flex flexDir="column" gap={2}>
           <ErrorBoundary fallback={<ErrorSection />}>
             <Suspense>
-              <SuspenseQuery {...meQueries.me()}>
-                {({ data: meData }) => (
-                  <SuspenseQuery {...gradeQueries.point()}>
-                    {({ data: gradePointData }) => {
-                      const { point, grade } = meData;
-                      const gradePointList = gradePointData?.gradePointList ?? [];
-                      const progress = getGradeProgress(point, grade, gradePointList);
-                      const pointsToNext = getPointsToNextGrade(point, grade, gradePointList);
+              <SuspenseQueries queries={[meQueries.me(), gradeQueries.point()]}>
+                {([{ data: meData }, { data: gradePointData }]) => {
+                  const { point, grade } = meData;
+                  const gradePointList = gradePointData?.gradePointList ?? [];
+                  const progress = getGradeProgress(point, grade, gradePointList);
+                  const pointsToNext = getPointsToNextGrade(point, grade, gradePointList);
 
-                      return (
-                        <>
-                          <Text variant="H2_Bold">{GRADE_NAMES_LABEL[grade]}</Text>
-                          <ProgressBar value={progress} size="xs" />
-                          <Flex justifyContent="space-between">
-                            <Box textAlign="left">
-                              <Text variant="C1_Bold">현재 포인트</Text>
-                              <Text variant="C2_Regular" color="neutral.03_gray">
-                                {point}p
-                              </Text>
-                            </Box>
-                            {pointsToNext !== null && (
-                              <Box textAlign="right">
-                                <Text variant="C1_Bold">다음 등급까지</Text>
-                                <Text variant="C2_Regular" color="neutral.03_gray">
-                                  {pointsToNext}p
-                                </Text>
-                              </Box>
-                            )}
-                          </Flex>
-                        </>
-                      );
-                    }}
-                  </SuspenseQuery>
-                )}
-              </SuspenseQuery>
+                  return (
+                    <>
+                      <Text variant="H2_Bold">{GRADE_NAMES_LABEL[grade]}</Text>
+                      <ProgressBar value={progress} size="xs" />
+                      <Flex justifyContent="space-between">
+                        <Box textAlign="left">
+                          <Text variant="C1_Bold">현재 포인트</Text>
+                          <Text variant="C2_Regular" color="neutral.03_gray">
+                            {point}p
+                          </Text>
+                        </Box>
+                        {pointsToNext !== null && (
+                          <Box textAlign="right">
+                            <Text variant="C1_Bold">다음 등급까지</Text>
+                            <Text variant="C2_Regular" color="neutral.03_gray">
+                              {pointsToNext}p
+                            </Text>
+                          </Box>
+                        )}
+                      </Flex>
+                    </>
+                  );
+                }}
+              </SuspenseQueries>
             </Suspense>
           </ErrorBoundary>
         </Flex>
