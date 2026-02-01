@@ -6,8 +6,8 @@ import { groupProductTotalPrice } from '@/utils/product';
 import PriceView from './PriceView';
 
 function RecentPurchaseSection() {
-  const { data: recentProductList = [] } = useQuery(recentQueries.productList());
-  const groupedProducts = groupProductTotalPrice(recentProductList);
+  const { data: recentPurchaseProductList = [] } = useQuery(recentQueries.purchaseProductList());
+  const groupedProducts = groupProductTotalPrice(recentPurchaseProductList);
 
   return (
     <styled.section css={{ px: 5, pt: 4, pb: 8 }}>

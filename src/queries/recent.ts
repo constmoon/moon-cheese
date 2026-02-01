@@ -1,10 +1,10 @@
-import { getRecentProductList } from '@/api/recent';
+import { getRecentPurchaseProductList } from '@/api/recent';
 import { queryOptions } from '@tanstack/react-query';
 
 export const recentQueries = {
-  productList: () =>
+  purchaseProductList: () =>
     queryOptions({
-      queryKey: ['recent-product-list'],
-      queryFn: getRecentProductList,
+      queryKey: ['recent-purchase-product-list'],
+      queryFn: getRecentPurchaseProductList,
     }),
 };
