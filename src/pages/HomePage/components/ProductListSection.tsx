@@ -1,8 +1,12 @@
-import { Counter, SubGNB, Text } from '@/ui-lib';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Box, Grid, styled } from 'styled-system/jsx';
+import { Counter, SubGNB, Text } from '@/ui-lib';
+import { SuspenseQuery } from '@suspensive/react-query-5';
+import { ErrorBoundary } from '@suspensive/react';
+import { productQueries } from '@/queries/product';
 import ProductItem from '../components/ProductItem';
+import ErrorSection from '@/components/ErrorSection';
 import PriceView from './PriceView';
 
 function ProductListSection() {
@@ -26,63 +30,42 @@ function ProductListSection() {
           <SubGNB.Trigger value="tea">티</SubGNB.Trigger>
         </SubGNB.List>
       </SubGNB.Root>
-      <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-        <ProductItem.Root onClick={() => handleClickProduct(1)}>
-          <ProductItem.Image src="/moon-cheese-images/cheese-1-1.jpg" alt="월레스의 오리지널 웬슬리데일" />
-          <ProductItem.Info title="월레스의 오리지널 웬슬리데일" description="월레스가 아침마다 찾는 바로 그 치즈!" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={4} />
-              <ProductItem.Price>
-                <PriceView price={12.99} />
-              </ProductItem.Price>
-            </ProductItem.MetaLeft>
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
+      <ErrorBoundary fallback={<ErrorSection />}>
+        <Suspense>
+          <SuspenseQuery {...productQueries.productList()}>
+            {({ data: productList }) => {
+              const filteredProducts =
+                currentTab === 'all' ? productList : productList.filter(p => p.category.toLowerCase() === currentTab);
 
-        <ProductItem.Root onClick={() => handleClickProduct(2)}>
-          <ProductItem.Image src="/moon-cheese-images/cracker-1-1.jpg" alt="로봇 크런치 비스킷" />
-          <ProductItem.Info title="로봇 크런치 비스킷" description="로봇 캐릭터 모양의 귀리 비스킷" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={3} />
-              <ProductItem.Price>
-                <PriceView price={5.0} />
-              </ProductItem.Price>
-            </ProductItem.MetaLeft>
-            <ProductItem.FreeTag type="gluten" />
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
-
-        <ProductItem.Root onClick={() => handleClickProduct(3)}>
-          <ProductItem.Image src="/moon-cheese-images/tea-1-1.jpg" alt="문라이트 카모마일 티" />
-          <ProductItem.Info title="문라이트 카모마일 티" description="달빛 같은 부드러운 허브차" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={5} />
-              <ProductItem.Price>
-                <PriceView price={7.0} />
-              </ProductItem.Price>
-            </ProductItem.MetaLeft>
-            <ProductItem.FreeTag type="caffeine" />
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
-      </Grid>
+              return (
+                <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
+                  {filteredProducts.map(product => (
+                    <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
+                      <ProductItem.Image src={product.images[0]} alt={product.name} />
+                      <ProductItem.Info title={product.name} description={product.description} />
+                      <ProductItem.Meta>
+                        <ProductItem.MetaLeft>
+                          <ProductItem.Rating rating={product.rating} />
+                          <ProductItem.Price>
+                            <PriceView price={product.price} />
+                          </ProductItem.Price>
+                        </ProductItem.MetaLeft>
+                        {product.isGlutenFree && <ProductItem.FreeTag type="gluten" />}
+                        {product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />}
+                      </ProductItem.Meta>
+                      <Counter.Root>
+                        <Counter.Minus onClick={() => {}} disabled={true} />
+                        <Counter.Display value={0} />
+                        <Counter.Plus onClick={() => {}} />
+                      </Counter.Root>
+                    </ProductItem.Root>
+                  ))}
+                </Grid>
+              );
+            }}
+          </SuspenseQuery>
+        </Suspense>
+      </ErrorBoundary>
     </styled.section>
   );
 }
