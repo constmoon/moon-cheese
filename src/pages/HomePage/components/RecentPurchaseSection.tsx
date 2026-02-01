@@ -2,10 +2,12 @@ import { Flex, styled } from 'styled-system/jsx';
 import { Spacing, Text } from '@/ui-lib';
 import { useQuery } from '@tanstack/react-query';
 import { recentQueries } from '@/queries/recent';
+import { groupProductTotalPrice } from '@/utils/product';
 import PriceView from './PriceView';
 
 function RecentPurchaseSection() {
   const { data: recentProductList = [] } = useQuery(recentQueries.productList());
+  const groupedProducts = groupProductTotalPrice(recentProductList);
 
   return (
     <styled.section css={{ px: 5, pt: 4, pb: 8 }}>
@@ -23,8 +25,8 @@ function RecentPurchaseSection() {
         }}
         direction={'column'}
       >
-        {recentProductList.length > 0 &&
-          recentProductList.map(product => (
+        {groupedProducts.length > 0 ? (
+          groupedProducts.map(product => (
             <Flex key={product.id} css={{ gap: 4 }}>
               <styled.img
                 src={product.thumbnail}
@@ -43,7 +45,12 @@ function RecentPurchaseSection() {
                 </Text>
               </Flex>
             </Flex>
-          ))}
+          ))
+        ) : (
+          <Flex>
+            <Text variant="B2_Medium">최근 구매한 상품이 없습니다.</Text>
+          </Flex>
+        )}
       </Flex>
     </styled.section>
   );

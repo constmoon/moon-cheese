@@ -1,4 +1,4 @@
-import { getRecentProductList } from '@/api/recentProduct';
+import { getRecentProductList } from '@/api/recent';
 import { queryOptions } from '@tanstack/react-query';
 
 export const recentQueries = {
