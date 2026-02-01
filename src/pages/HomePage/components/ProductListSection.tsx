@@ -1,17 +1,17 @@
-import { Counter, SubGNB, Text } from '@/ui-lib';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Box, Grid, styled } from 'styled-system/jsx';
-import ProductItem from '../components/ProductItem';
-import PriceView from './PriceView';
-import { useQuery } from '@tanstack/react-query';
+import { Counter, SubGNB, Text } from '@/ui-lib';
+import { SuspenseQuery } from '@suspensive/react-query-5';
+import { ErrorBoundary } from '@suspensive/react';
 import { productQueries } from '@/queries/product';
+import ProductItem from '../components/ProductItem';
+import ErrorSection from '@/components/ErrorSection';
+import PriceView from './PriceView';
 
 function ProductListSection() {
   const [currentTab, setCurrentTab] = useState('all');
   const navigate = useNavigate();
-
-  const { data: productList = [] } = useQuery(productQueries.productList());
 
   const handleClickProduct = (productId: number) => {
     navigate(`/product/${productId}`);
@@ -30,29 +30,42 @@ function ProductListSection() {
           <SubGNB.Trigger value="tea">티</SubGNB.Trigger>
         </SubGNB.List>
       </SubGNB.Root>
-      <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-        {productList.map(product => (
-          <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
-            <ProductItem.Image src={product.images[0]} alt={product.name} />
-            <ProductItem.Info title={product.name} description={product.description} />
-            <ProductItem.Meta>
-              <ProductItem.MetaLeft>
-                <ProductItem.Rating rating={product.rating} />
-                <ProductItem.Price>
-                  <PriceView price={product.price} />
-                </ProductItem.Price>
-              </ProductItem.MetaLeft>
-              {product.isGlutenFree && <ProductItem.FreeTag type="gluten" />}
-              {product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />}
-            </ProductItem.Meta>
-            <Counter.Root>
-              <Counter.Minus onClick={() => {}} disabled={true} />
-              <Counter.Display value={0} />
-              <Counter.Plus onClick={() => {}} />
-            </Counter.Root>
-          </ProductItem.Root>
-        ))}
-      </Grid>
+      <ErrorBoundary fallback={<ErrorSection />}>
+        <Suspense>
+          <SuspenseQuery {...productQueries.productList()}>
+            {({ data: productList }) => {
+              const filteredProducts =
+                currentTab === 'all' ? productList : productList.filter(p => p.category.toLowerCase() === currentTab);
+
+              return (
+                <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
+                  {filteredProducts.map(product => (
+                    <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
+                      <ProductItem.Image src={product.images[0]} alt={product.name} />
+                      <ProductItem.Info title={product.name} description={product.description} />
+                      <ProductItem.Meta>
+                        <ProductItem.MetaLeft>
+                          <ProductItem.Rating rating={product.rating} />
+                          <ProductItem.Price>
+                            <PriceView price={product.price} />
+                          </ProductItem.Price>
+                        </ProductItem.MetaLeft>
+                        {product.isGlutenFree && <ProductItem.FreeTag type="gluten" />}
+                        {product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />}
+                      </ProductItem.Meta>
+                      <Counter.Root>
+                        <Counter.Minus onClick={() => {}} disabled={true} />
+                        <Counter.Display value={0} />
+                        <Counter.Plus onClick={() => {}} />
+                      </Counter.Root>
+                    </ProductItem.Root>
+                  ))}
+                </Grid>
+              );
+            }}
+          </SuspenseQuery>
+        </Suspense>
+      </ErrorBoundary>
     </styled.section>
   );
 }
