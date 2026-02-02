@@ -2,6 +2,7 @@ import Badge from '@/ui-lib/components/badge';
 import CurrencyToggle from '@/ui-lib/components/currency-toggle';
 import { ArrowLeftIcon, ShoppingCartIcon } from '@/ui-lib/components/icons';
 import Logo from '@/ui-lib/components/logo';
+import { useCartStore } from '@/stores/useCartStore';
 import { useLocation, useNavigate } from 'react-router';
 import { Flex, styled } from 'styled-system/jsx';
 import { flex } from 'styled-system/patterns';
@@ -45,9 +46,10 @@ function BackButton() {
 
 function ShoppingCartButton() {
   const navigate = useNavigate();
+  const totalQuantity = useCartStore(state => state.getTotalQuantity());
 
   return (
-    <Badge content={9} size="sm" cursor="pointer" onClick={() => navigate('/shopping-cart')}>
+    <Badge content={totalQuantity} size="sm" cursor="pointer" onClick={() => navigate('/shopping-cart')}>
       <ShoppingCartIcon size={22} />
     </Badge>
   );

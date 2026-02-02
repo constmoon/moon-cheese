@@ -8,10 +8,12 @@ import { productQueries } from '@/queries/product';
 import ProductItem from '../components/ProductItem';
 import ErrorSection from '@/components/ErrorSection';
 import PriceView from './PriceView';
+import { useCartStore } from '@/stores/useCartStore';
 
 function ProductListSection() {
   const [currentTab, setCurrentTab] = useState('all');
   const navigate = useNavigate();
+  const { addItem, removeItem, getQuantity } = useCartStore();
 
   const handleClickProduct = (productId: number) => {
     navigate(`/product/${productId}`);
@@ -35,7 +37,9 @@ function ProductListSection() {
           <SuspenseQuery {...productQueries.productList()}>
             {({ data: productList }) => {
               const filteredProducts =
-                currentTab === 'all' ? productList : productList.filter(p => p.category.toLowerCase() === currentTab);
+                currentTab === 'all'
+                  ? productList
+                  : productList.filter(product => product.category.toLowerCase() === currentTab);
 
               return (
                 <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
@@ -54,9 +58,15 @@ function ProductListSection() {
                         {product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />}
                       </ProductItem.Meta>
                       <Counter.Root>
-                        <Counter.Minus onClick={() => {}} disabled={true} />
-                        <Counter.Display value={0} />
-                        <Counter.Plus onClick={() => {}} />
+                        <Counter.Minus
+                          onClick={() => removeItem(product.id)}
+                          disabled={getQuantity(product.id) === 0}
+                        />
+                        <Counter.Display value={getQuantity(product.id)} />
+                        <Counter.Plus
+                          onClick={() => addItem(product.id)}
+                          disabled={getQuantity(product.id) >= product.stock}
+                        />
                       </Counter.Root>
                     </ProductItem.Root>
                   ))}
