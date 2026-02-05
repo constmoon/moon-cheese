@@ -1,4 +1,4 @@
-import { RatingGroup, Text, type TextProps } from '@/ui-lib';
+import { Counter, RatingGroup, Text, type TextProps } from '@/ui-lib';
 import { Box, Flex, HStack, Stack, styled, type BoxProps, type HstackProps, type StackProps } from 'styled-system/jsx';
 
 const ProductItemRoot = ({ children, onClick, ...props }: BoxProps) => {
@@ -76,6 +76,38 @@ const ProductItemFreeTag = ({ type }: { type: 'milk' | 'caffeine' | 'gluten' }) 
   return <styled.img src={icon.src} alt={icon.alt} w={8} h={8} />;
 };
 
+const ProductItemCounter = ({
+  quantity,
+  maxQuantity,
+  onIncrease,
+  onDecrease,
+}: {
+  quantity: number;
+  maxQuantity: number;
+  onIncrease: () => void;
+  onDecrease: () => void;
+}) => {
+  return (
+    <Counter.Root>
+      <Counter.Minus
+        onClick={e => {
+          e.preventDefault();
+          onDecrease();
+        }}
+        disabled={quantity === 0}
+      />
+      <Counter.Display value={quantity} />
+      <Counter.Plus
+        onClick={e => {
+          e.preventDefault();
+          onIncrease();
+        }}
+        disabled={quantity >= maxQuantity}
+      />
+    </Counter.Root>
+  );
+};
+
 // Compound component pattern
 const ProductItem = {
   Root: ProductItemRoot,
@@ -86,6 +118,7 @@ const ProductItem = {
   Rating: ProductItemRating,
   Price: ProductItemPrice,
   FreeTag: ProductItemFreeTag,
+  Counter: ProductItemCounter,
 };
 
 export default ProductItem;
