@@ -30,15 +30,11 @@ function ProductListSection() {
       <ErrorBoundary fallback={<ErrorSection />}>
         <Suspense>
           <SuspenseQuery {...productQueries.productList()}>
-            {({ data: productList }) => {
-              const filteredProducts =
-                currentTab === 'all'
-                  ? productList
-                  : productList.filter(product => product.category.toLowerCase() === currentTab);
-
-              return (
-                <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-                  {filteredProducts.map(product => (
+            {({ data: productList }) => (
+              <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
+                {productList
+                  .filter(product => currentTab === 'all' || product.category.toLowerCase() === currentTab)
+                  .map(product => (
                     <Link key={product.id} to={`/product/${product.id}`}>
                       <ProductItem.Root>
                         <ProductItem.Image src={product.images[0]} alt={product.name} />
@@ -62,9 +58,8 @@ function ProductListSection() {
                       </ProductItem.Root>
                     </Link>
                   ))}
-                </Grid>
-              );
-            }}
+              </Grid>
+            )}
           </SuspenseQuery>
         </Suspense>
       </ErrorBoundary>
