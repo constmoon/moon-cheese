@@ -1,7 +1,7 @@
 import { Suspense, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { Box, Grid, styled } from 'styled-system/jsx';
-import { Counter, SubGNB, Text } from '@/ui-lib';
+import { SubGNB, Text } from '@/ui-lib';
 import { SuspenseQuery } from '@suspensive/react-query-5';
 import { ErrorBoundary } from '@suspensive/react';
 import { productQueries } from '@/queries/product';
@@ -12,12 +12,7 @@ import { useCartStore } from '@/stores/useCartStore';
 
 function ProductListSection() {
   const [currentTab, setCurrentTab] = useState('all');
-  const navigate = useNavigate();
   const { addItem, removeItem, getQuantity } = useCartStore();
-
-  const handleClickProduct = (productId: number) => {
-    navigate(`/product/${productId}`);
-  };
 
   return (
     <styled.section bg="background.01_white">
@@ -35,44 +30,36 @@ function ProductListSection() {
       <ErrorBoundary fallback={<ErrorSection />}>
         <Suspense>
           <SuspenseQuery {...productQueries.productList()}>
-            {({ data: productList }) => {
-              const filteredProducts =
-                currentTab === 'all'
-                  ? productList
-                  : productList.filter(product => product.category.toLowerCase() === currentTab);
-
-              return (
-                <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-                  {filteredProducts.map(product => (
-                    <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
-                      <ProductItem.Image src={product.images[0]} alt={product.name} />
-                      <ProductItem.Info title={product.name} description={product.description} />
-                      <ProductItem.Meta>
-                        <ProductItem.MetaLeft>
-                          <ProductItem.Rating rating={product.rating} />
-                          <ProductItem.Price>
-                            <PriceView price={product.price} />
-                          </ProductItem.Price>
-                        </ProductItem.MetaLeft>
-                        {product.isGlutenFree && <ProductItem.FreeTag type="gluten" />}
-                        {product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />}
-                      </ProductItem.Meta>
-                      <Counter.Root>
-                        <Counter.Minus
-                          onClick={() => removeItem(product.id)}
-                          disabled={getQuantity(product.id) === 0}
+            {({ data: productList }) => (
+              <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
+                {productList
+                  .filter(product => currentTab === 'all' || product.category.toLowerCase() === currentTab)
+                  .map(product => (
+                    <Link key={product.id} to={`/product/${product.id}`}>
+                      <ProductItem.Root>
+                        <ProductItem.Image src={product.images[0]} alt={product.name} />
+                        <ProductItem.Info title={product.name} description={product.description} />
+                        <ProductItem.Meta>
+                          <ProductItem.MetaLeft>
+                            <ProductItem.Rating rating={product.rating} />
+                            <ProductItem.Price>
+                              <PriceView price={product.price} />
+                            </ProductItem.Price>
+                          </ProductItem.MetaLeft>
+                          {product.isGlutenFree && <ProductItem.FreeTag type="gluten" />}
+                          {product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />}
+                        </ProductItem.Meta>
+                        <ProductItem.Counter
+                          quantity={getQuantity(product.id)}
+                          maxQuantity={product.stock}
+                          onIncrease={() => addItem(product.id)}
+                          onDecrease={() => removeItem(product.id)}
                         />
-                        <Counter.Display value={getQuantity(product.id)} />
-                        <Counter.Plus
-                          onClick={() => addItem(product.id)}
-                          disabled={getQuantity(product.id) >= product.stock}
-                        />
-                      </Counter.Root>
-                    </ProductItem.Root>
+                      </ProductItem.Root>
+                    </Link>
                   ))}
-                </Grid>
-              );
-            }}
+              </Grid>
+            )}
           </SuspenseQuery>
         </Suspense>
       </ErrorBoundary>
