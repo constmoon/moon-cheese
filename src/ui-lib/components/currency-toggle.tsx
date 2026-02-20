@@ -1,5 +1,9 @@
 import { Switch as ArkSwitch, switchAnatomy } from '@ark-ui/react';
 import { css, cx, type RecipeVariantProps, sva } from 'styled-system/css';
+import { Currency, DEFAULT_EXCHANGE_RATE } from '@/constants/currency';
+import { useCurrencyStore } from '@/stores/useCurrencyStore';
+import { useQuery } from '@tanstack/react-query';
+import { currencyQueries } from '@/queries/currency';
 
 export type CurrencyToggleVariantProps = RecipeVariantProps<typeof currencyToggleRecipe>;
 
@@ -75,21 +79,19 @@ export const currencyToggleRecipe = sva({
   },
 });
 
-export type CurrencyType = 'USD' | 'KRW';
-
 export type CurrencyToggleProps = CurrencyToggleVariantProps & {
-  value?: CurrencyType;
-  defaultValue?: CurrencyType;
-  onValueChange?: (value: CurrencyType) => void;
   disabled?: boolean;
 };
 
-const CurrencyToggle = ({ value, defaultValue = 'USD', onValueChange, disabled = false }: CurrencyToggleProps) => {
-  const handleChange = (details: { checked: boolean }) => {
-    onValueChange?.(details.checked ? 'KRW' : 'USD');
-  };
+const CurrencyToggle = ({ disabled = false }: CurrencyToggleProps) => {
+  const { currency, setCurrency, setExchangeRate } = useCurrencyStore();
+  const { data: exchangeRate } = useQuery(currencyQueries.exchangeRate());
+  const isCheckedKRW = currency === Currency.KRW;
 
-  const isCheckedKRW = value ? value === 'KRW' : defaultValue === 'KRW';
+  const handleChange = (details: { checked: boolean }) => {
+    setCurrency(details.checked ? Currency.KRW : Currency.USD);
+    setExchangeRate(exchangeRate ?? DEFAULT_EXCHANGE_RATE);
+  };
 
   const classes = currencyToggleRecipe();
 

@@ -1,14 +1,13 @@
 import Badge from '@/ui-lib/components/badge';
-import CurrencyToggle, { type CurrencyType } from '@/ui-lib/components/currency-toggle';
+import CurrencyToggle from '@/ui-lib/components/currency-toggle';
 import { ArrowLeftIcon, ShoppingCartIcon } from '@/ui-lib/components/icons';
 import Logo from '@/ui-lib/components/logo';
-import { useState } from 'react';
+import { useCartStore } from '@/stores/useCartStore';
 import { useLocation, useNavigate } from 'react-router';
 import { Flex, styled } from 'styled-system/jsx';
 import { flex } from 'styled-system/patterns';
 
 export function Header() {
-  const [currency, setCurrency] = useState<CurrencyType>('USD');
   const location = useLocation();
 
   const isRootRoute = location.pathname === '/';
@@ -28,7 +27,7 @@ export function Header() {
     >
       {isRootRoute ? <Logo /> : <BackButton />}
       <Flex alignItems="center" gap={4}>
-        <CurrencyToggle value={currency} onValueChange={setCurrency} />
+        <CurrencyToggle />
         <ShoppingCartButton />
       </Flex>
     </styled.header>
@@ -47,9 +46,10 @@ function BackButton() {
 
 function ShoppingCartButton() {
   const navigate = useNavigate();
+  const totalQuantity = useCartStore(state => state.getTotalQuantity());
 
   return (
-    <Badge content={9} size="sm" cursor="pointer" onClick={() => navigate('/shopping-cart')}>
+    <Badge content={totalQuantity} size="sm" cursor="pointer" onClick={() => navigate('/shopping-cart')}>
       <ShoppingCartIcon size={22} />
     </Badge>
   );
